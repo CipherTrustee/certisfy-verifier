@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+ <html solvent_object_id="bc546435028d4b6ed2a51f85d418d324"><head><script src="/ide-proxy/com.codesolvent.solvent.platform.static-asset/lowcodr/js-object-merger.js"></script>
+<link href="js/jsoneditor/jsoneditor.min.css" rel="stylesheet">
+<script src="js/jsoneditor/jsoneditor.min.js"></script>
+
+<script type="module">
+  import * as certisfyCrypto from "./js/crypto/pkijs-impl-module.js"
+  window.certisfyCrypto = certisfyCrypto;
+  window.certisfyCrypto.SET_SDK_MODE(true);
+  window.certisfyCrypto.loadTrustRoots()
+</script><script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    
+<link href="https://cdn.jsdelivr.net/npm/vuetify@3.x/dist/vuetify.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/vuetify@3.x/dist/vuetify.min.js"></script>
+<title>Certisfy Claim Verifier</title>
+
+<script> 
+function importAppModule(modulePath){return import(modulePath)};
+</script><script>
+      var solventAppErrorHandler = null;
+      if((new URL(window.location.href).searchParams.get("radkit_composer_viewport_id"))){
+
+        solventAppErrorHandler = (error, vm, info) => {
+              // error: error trace
+              // vm: component in which error occured
+              // info: Vue specific error information such as lifecycle hooks, events etc.
+
+              (window.opener?window.opener:(window.parent?window.parent:window)).postMessage(Object.assign({},{
+                  "message":"radkit.driver.objectEditorUIEvent",
+                  "editorMsg":"log-app-message",
+                  "args":{
+                    "log":(typeof error == "string"?{"message":error}:error),
+                    "radkit_composer_viewport_id":(new URL(window.location.href).searchParams.get("radkit_composer_viewport_id"))
+                  }
+              }));
+        };
+    }
+</script></head><body><div id="app" data-role="mount-element" solvent_object_id="a31c47b7cd390d771b35c55ab7839adc"><v-app solvent_object_id="el-tkn6g0w5ssnjd"><v-main solvent_object_id="el-8o043ozobyce9"><v-toolbar solvent_object_id="el-24zhu4epv30fe"><v-toolbar-title solvent_object_id="el-uzlesuk1cubrs">Certisfy Claim Verifier</v-toolbar-title><v-spacer solvent_object_id="el-se44g4b2c5k98"></v-spacer></v-toolbar><v-container v-if="currentView === 'inputForm' || true" solvent_object_id="el-xw8jb7tohalhe"><v-row solvent_object_id="el-x67n6yue3jmq9"><v-col solvent_object_id="el-3e7ps86z0mz3y"><v-card solvent_object_id="el-5vwkb0hvmkx54"><v-card-text solvent_object_id="el-o8cytd1f2ty32"><v-form solvent_object_id="el-6ad7w2ba5mavj"><v-textarea label="Enter Claim Data" v-model="claimText" solvent_object_id="el-lj1okq7tmwrj5"></v-textarea><v-text-field placeholder="Claim Receiver Id" v-model="claimReceiverId" solvent_object_id="fc37756069a01949d2b90d341d458c07"></v-text-field></v-form></v-card-text><v-card-actions solvent_object_id="el-716k24y7qqb3q"><v-spacer solvent_object_id="298f71bedd31bd0b7fd4e12443774393"></v-spacer><v-btn v-on:click="verifyClaim" solvent_object_id="el-xlv7ysttdk2u0">Verify</v-btn></v-card-actions></v-card></v-col></v-row></v-container><v-container v-if="currentView === 'results' || true" solvent_object_id="el-1vz4g9s2ifv86"><v-row solvent_object_id="el-wcm4zxurzz6uw"><v-col solvent_object_id="el-clmeqqig2n0vs"><v-card solvent_object_id="ff334c6d098de6038ad6b4bac0b19cdc"><v-card-title solvent_object_id="e26a06059fd474ea616bd119e64eb76e">Results</v-card-title><v-card-text solvent_object_id="9590dd6a3ac9fac61735d759db6f8b62"><v-tabs color="primary" grow v-model="tabs" solvent_object_id="el-6vtoofseywsuu"><v-tab href="#id_8d0eb30591d34ce7b9eadcd4fa39dc8e" v-bind:value="1" solvent_object_id="el-9uu2jhxaeywf4"> JSON </v-tab><v-tab href="#id_053f2cebf0b840c49592df2c015f76c2" v-bind:value="2" solvent_object_id="el-fsu6aaqjnfwfy"> Summary </v-tab></v-tabs><v-tabs-window background-color="primary" dark v-model="tabs" solvent_object_id="el-x1firx00c25pe"><v-tabs-window-item :value="1" :key="1" solvent_object_id="el-6rcqqaj20tp8w"><br>
+<div id="jsoneditor" ref="jsoneditor" style="width: 100%; height: 400px;"></div></v-tabs-window-item><v-tabs-window-item :value="2" :key="2" solvent_object_id="el-o9az01wy0clrk"><span v-if="docVerificationContext">
+		  <v-card flat v-if="isClaimTrustworthy(docVerificationContext)">
+            <v-card-text> 
+              <v-chip>This Claim Is Trustworthy</v-chip>
+              <p v-if="docVerificationContext.claimPurpose">
+                <v-text-field label="Intended Purpose" :value="docVerificationContext.claimPurpose"></v-text-field>
+              </p>
+            </v-card-text>
+          </v-card>
+
+		  <v-card flat v-if="!isClaimTrustworthy(docVerificationContext)">
+            <v-card-text>
+              <h2>This Claim Is Not Trustworthy</h2>
+              
+              <p v-for="errorText in buildErrorList(docVerificationContext)">
+                 &#8250;{{errorText}}
+              </p>
+            </v-card-text>
+          </v-card>
+          
+          <v-card flat v-if="filterVerificationFields(docVerificationContext,docVerificationContext.fieldVerification.fields,true,true).length>0">
+
+            <v-card-text>   
+			  <h2>Verified Information</h2>
+              
+              <v-list>
+                <v-list-item v-for="field in rebuildVerificationFields(docVerificationContext,docVerificationContext.fieldVerification.fields,true,true)">
+                  
+                    <v-list-item-title>
+                    	&#10003;<b>{{ field.plainField.name }}</b>            
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      {{ field.plainField.value }}
+                    </v-list-item-subtitle>
+                  
+                </v-list-item>
+              </v-list>
+              
+			  <v-list v-if="docVerificationContext.trustedVouchVerifications" v-for="vouchVerification in docVerificationContext.trustedVouchVerifications">
+                <v-list-item v-for="field in rebuildVerificationFields(vouchVerification,vouchVerification.fieldVerification.fields,true,true)">
+                                    
+                    <v-list-item-title>
+                    	&#10003;<b>{{ field.plainField.name }}</b>            
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      {{ field.plainField.value }}
+                    </v-list-item-subtitle>
+                  
+                </v-list-item>
+              </v-list>              
+              
+            </v-card-text>
+          </v-card>              
+          
+          <v-card flat v-if="filterVerificationFields(docVerificationContext,docVerificationContext.fieldVerification.fields,false,true).length>0">
+            
+            <v-card-text color="grey" text-color="white">
+              <h2>Unverified Information</h2>
+              
+              <v-list>
+                <v-list-item v-for="field in rebuildVerificationFields(docVerificationContext,docVerificationContext.fieldVerification.fields,false,true)">
+
+                    <v-list-item-title>
+                    	&#8250;<b>{{ field.plainField.name }}</b>            
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      {{ field.plainField.value }}
+                    </v-list-item-subtitle>
+                  
+                </v-list-item>
+              </v-list>   
+            </v-card-text>
+          </v-card> 
+
+          <v-card flat v-if="((docVerificationContext.pkiIdentityVerified && docVerificationContext['pki-identity']['pki-sp-id-anchor-token']))">
+
+            <v-card-text>
+              <h2>Owner Identity Information</h2>
+              
+              <strong>ID</strong>:
+              <v-chip small color="grey" text-color="white">
+                {{(docVerificationContext['pki-identity']['pki-sp-id-anchor-token'])}}
+              </v-chip> <br>
+              <strong>ID</strong> persona type:
+              <v-chip small color="grey" text-color="white">
+                {{docVerificationContext["pki-identity"]["pki-sp-id-anchor-token-persona"]}}
+              </v-chip> <br>
+              <span v-if="docVerificationContext['pki-identity']['pki-sp-id-anchor-token']">
+                  <strong>ID</strong> is only valid for receiver:
+                  <v-chip small color="grey" text-color="white">
+                    {{docVerificationContext.spUri }}
+                  </v-chip> <br>
+                  <strong>ID</strong> based on identity element:
+                  <v-chip small color="grey" text-color="white">
+                    {{docVerificationContext["pki-identity"]["pki-id-anchor-element"]}}
+                  </v-chip>
+              </span>
+              
+            </v-card-text>
+
+          </v-card>              
+          
+          <v-card flat v-if="docVerificationContext.untrustedVouches && docVerificationContext.untrustedVouches.length>0">
+            
+            <v-card-text>
+              <h2>Vouching</h2>
+              <br>
+              <v-card flat v-for="vouch in docVerificationContext.untrustedVouches">
+                
+				  <v-card flat>
+                    <v-card-title>          
+                      <h3>Claims Vouched For</h3>
+                    </v-card-title>
+                    <v-card-text>
+                        
+                      <span v-for="field in vouch.fields">
+                        <v-textarea
+                          v-if="((field.plainField.name && field.plainField.name.length>0) || (field.plainField.value && field.plainField.value.length>0))"
+                          :label="((field.plainField.name && field.plainField.name.length>0 && field.plainField.value && field.plainField.value.length>0)?field.plainField.name:'Claim')"
+                          :model-value="((field.plainField.value && field.plainField.value.length>0)?field.plainField.value:field.plainField.name)"
+                          hide-details
+                          rows="1"
+                          auto-grow
+                         ></v-textarea>
+                      </span>
+                    </v-card-text>
+                  </v-card>
+                
+                  <v-card flat>
+                    <v-card-title>          
+                      <h3>Vouch Issuer</h3>
+                    </v-card-title>
+                    <v-card-text>                        	
+                        <v-list>
+                          <v-list-item v-for="fieldName in Object.keys(vouch.issuer)">
+                            
+                              <v-icon color="green">check</v-icon> 
+                            
+                              <v-list-item-title>
+                                  <b>{{fieldName}}</b>            
+                              </v-list-item-title>
+                              <v-list-item-subtitle>
+                                {{  vouch.issuer[fieldName] }}
+                              </v-list-item-subtitle>
+                            
+                          </v-list-item>
+                        </v-list>
+                      
+                      
+                    </v-card-text>
+                  </v-card>
+                
+				  <v-card flat v-if="vouch.supportingStatements && vouch.supportingStatements.length>0">
+
+                    <v-card-text>
+                      <v-chip label class="ma-0">
+                        Supporting Statements
+                      </v-chip>
+                      <br>
+                      <br>
+                      <span v-for="field in vouch.supportingStatements">
+
+                        <v-textarea
+                          v-if="((field.plainField.name && field.plainField.name.length>0) || (field.plainField.value && field.plainField.value.length>0))"
+                          :label="((field.plainField.name && field.plainField.name.length>0 && field.plainField.value && field.plainField.value.length>0)?field.plainField.name:'Statement')"
+                          :model-value="((field.plainField.value && field.plainField.value.length>0)?field.plainField.value:field.plainField.name)"
+                          hide-details
+                          rows="1"
+                          auto-grow
+                         ></v-textarea>
+                      </span>
+                      
+                    </v-card-text>
+                  </v-card>
+                
+                  <hr v-if="(docVerificationContext.untrustedVouches.indexOf(vouch)<docVerificationContext.untrustedVouches.length-1)">
+                
+              </v-card>
+              
+            </v-card-text>
+          </v-card>
+</span></v-tabs-window-item></v-tabs-window></v-card-text></v-card></v-col></v-row></v-container></v-main></v-app></div>
+<!--before app create include-->
+
+
+
+<script >
+
+var SolventVueJSversion ='3';
+var SolventVueMainAppMountElementId ='app';
+
+ var SolventVueMainAppPublicInstance=null;
+
+var SolventVueMainApp = null;
+
+var SolventVueMainAppConfig={"el":"#app","vuetify":(typeof SolventVueJSversion != 'undefined' && SolventVueJSversion != null && SolventVueJSversion != '2')?null:new Vuetify(),"data":function() {
+                return {
+                  	claimText:null,
+                  	claimReceiverId:null,
+                  	docVerificationContext:null,
+                    currentView: 'inputForm',
+                    tab: null,
+                    tabs:null
+                };
+            },"methods":{"verifyClaim":function() {
+  	return new Promise(async (resovle,reject)=>{
+        const claim = JSON.parse(this.claimText);
+      
+        const receiverId = (this.claimReceiverId && this.claimReceiverId.length>0)? [this.claimReceiverId]:null;
+      
+        const resp = await window.appModule.verifyClaim(this.claimText,receiverId,claim.trustChain);
+      
+        //optional- if there are vouched-for claims, verify them
+        if(certisfyCrypto.isClaimTrustworthy(resp))
+           await certisfyCrypto.verifyVouches(claim,resp);
+      
+      	this.docVerificationContext = resp;
+      	this.docVerificationContext.spUri = receiverId?receiverId[0]:null;
+        this.jsoneditor.set(resp);
+    });
+},"isClaimTrustworthy":function(docVerificationContext){    
+	return certisfyCrypto.isClaimTrustworthy(docVerificationContext)
+},"buildErrorList":function(docVerificationContext)
+{
+  return certisfyCrypto.buildErrorList(docVerificationContext)
+},"filterVerificationFields":function(docVerificationContext,fields,verified,hideInternal){
+   return certisfyCrypto.filterVerificationFields(docVerificationContext,fields,verified,hideInternal);
+},"rebuildVerificationFields":function(docVerificationContext,fields,verificationFilter,internalFieldFilter){ 
+  return certisfyCrypto.rebuildVerificationFields(docVerificationContext,fields,verificationFilter,internalFieldFilter);
+}},"mounted":function(){
+   		this.$nextTick(() => {
+		// create the editor
+        const container = this.$refs["jsoneditor"];//document.getElementById("jsoneditor");//
+        const options = {}
+        
+        //console.log("app mounted",container)
+        const editor = new JSONEditor(container, options)
+
+        // set json
+        const initialJson = {
+            "Array": [1, 2, 3],
+            "Boolean": true,
+            "Null": null,
+            "Number": 123,
+            "Object": {"a": "b", "c": "d"},
+            "String": "Hello World"
+        }
+        //editor.set(initialJson)
+
+        // get json
+        const updatedJson = editor.get()
+        this.jsoneditor = editor;
+        })
+},"setup":function(){
+
+}};
+
+//before app mount include
+
+
+
+
+var isSolventComposerMode = (new URL(window.location.href).searchParams.get("radkit_composer_on") == "true");
+var isSolventLowcodrEmbeddedUIMode = (new URL(window.location.href).searchParams.get("radkit_composer_headlessMode") != "true");
+var SolventLowcodrAppLoader = function(){
+try
+{
+    importAppModule("./App-module.js?ts="+(new Date().getTime())).then((appModule)=>{
+        window["appModule"] = appModule.default?appModule.default:appModule;   
+
+        
+    
+   try
+   {
+        if(SolventVueJSversion && SolventVueJSversion != '2'){
+            SolventVueMainApp = Vue.createApp(SolventVueMainAppConfig);
+            SolventVueMainApp.use(Vuetify.createVuetify());
+
+            if(typeof SolventRadkitComposerNodeFrameDef == "object"){//set if in composer mode
+                SolventVueMainApp.component("solvent-radkit-composer-node-frame",SolventRadkitComposerNodeFrameDef.vuejs);
+            }
+          
+            if(typeof solventAppErrorHandler != "undefined" && solventAppErrorHandler){
+              	SolventVueMainApp.config.errorHandler = solventAppErrorHandler;
+                SolventVueMainApp.config.warnHandler = solventAppErrorHandler;
+            }
+          
+            SolventVueMainAppPublicInstance = SolventVueMainApp.mount("#"+SolventVueMainAppMountElementId);
+        }
+        else
+        {
+            if(typeof SolventRadkitComposerNodeFrameDef == "object"){//set if in composer mode
+                Vue.component("solvent-radkit-composer-node-frame",SolventRadkitComposerNodeFrameDef.vuejs);
+            }
+          
+            if(typeof solventAppErrorHandler != "undefined" && solventAppErrorHandler){
+              	Vue.config.errorHandler = solventAppErrorHandler;
+                Vue.config.warnHandler = solventAppErrorHandler;
+            }
+          
+            SolventVueMainApp = new Vue(SolventVueMainAppConfig);
+        }
+    }
+    catch(error){
+        if((new URL(window.location.href).searchParams.get("radkit_composer_viewport_id"))){
+            (window.parent?window.parent:window).postMessage(Object.assign({},{
+                "message":"radkit.driver.objectEditorUIEvent",
+                "editorMsg":"log-app-message",
+                "args":{
+                  "log":error,
+                  "radkit_composer_viewport_id":(new URL(window.location.href).searchParams.get("radkit_composer_viewport_id"))
+                }
+             }));
+    	}
+    }  
+    });
+}
+catch(error){
+    if((new URL(window.location.href).searchParams.get("radkit_composer_viewport_id"))){
+        (window.opener?window.opener:(window.parent?window.parent:window)).postMessage(Object.assign({},{
+          "message":"radkit.driver.objectEditorUIEvent",
+          "editorMsg":"log-app-message",
+          "args":{
+            "log":error,
+            "radkit_composer_viewport_id":(new URL(window.location.href).searchParams.get("radkit_composer_viewport_id"))
+          }
+        }));
+    }
+}
+if(typeof SolventVueMainAppPublicInstance != "undefined" && SolventVueMainAppPublicInstance != null)
+	SolventVueMainAppPublicInstance.appModule = appModule;
+else
+if(typeof SolventVueMainApp != "undefined" && SolventVueMainApp != null)
+	SolventVueMainApp.appModule = appModule;
+};
+if(isSolventLowcodrEmbeddedUIMode || !isSolventComposerMode)
+	window.addEventListener('load', SolventLowcodrAppLoader);
+
+//after mount app include
+
+</script>
+<!--after create app include--><script>const App=SolventVueMainAppConfig;
+</script>
+</body></html>
