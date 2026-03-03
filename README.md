@@ -60,7 +60,14 @@ The verifier exposes the following API functions to faciliate claim verification
     ```javascript
     const verification = await certisfyCrypto.verifyClaim(claim,receiverId,claim.trustChain || true);
     ```
-
+	
+    The `verification` object represents the result of the verification. Review the console to see what it looks
+    like and also take a look at the markup of the console app to see how this verification object maps to 
+    verification result presented in the UI.
+    
+    This object is rather opaque, see `getVerificationResult` below for a way to get a simplier result object.
+    
+    
 2. `verifyVouches(claim,verification)`
 
     This function is used to verify any vouching associated with a claim. 
@@ -88,6 +95,8 @@ The verifier exposes the following API functions to faciliate claim verification
        await certisfyCrypto.verifyVouches(claim,verification);
     ```
 
+	`verifyVouches` modifies the `verification` object to integrate vouch verification results.
+    
 3. `getVerificationResult(verification)`
 
     This function transforms the `verification` object into something easier to use. 
@@ -99,3 +108,11 @@ The verifier exposes the following API functions to faciliate claim verification
     - `verification`\
       This is the `verification` object that results from calling `verifyClaim`.
 
+    **Usage** 
+    
+    ```javascript
+    const verificationResult = getVerificationResult(verification);
+    ```
+	
+    The `verificationResult` object represents a simplier and more intuitive object that shows the result of verification.
+    Review the console results to see what it looks like.

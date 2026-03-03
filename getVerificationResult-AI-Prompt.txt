@@ -1,4 +1,4 @@
-I am going to give you a markup snippet whose structure should be thought of as the structure of an output objective, given a certain input object. 
+I am going to give you a markup snippet whose structure should be thought of as the structure of an output object, given a certain input object. 
 The markup makes references to functions, use those functions in the code you write.
 
 The function I want you to write is JavaScript with the following signature:
