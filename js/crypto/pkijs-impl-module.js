@@ -2371,6 +2371,9 @@
                 let signedStringPayloadText 	= signaturePayload.signedString.substring(0,signaturePayload.signedString.lastIndexOf("timestamp"));
 
               	let trustChain = useChain;
+                if(typeof useChain == "boolean" && useChain && signaturePayload.trustChain)
+                   trustChain = signaturePayload.trustChain;                  	
+              
                 if((!trustChain || trustChain.certs.length == 0)){
                     trustChain = await getCertChain(signaturePayload.signerID);
                     /*
@@ -2441,7 +2444,7 @@
                 signatureVerification["fieldVerification"]=await verifyCertificateFields(signatureVerification.signedString,signatureVerification.signerID,signaturePayload.plainFields,signerCert);
 
               
-				await verifyPKIIdentity(signaturePayload,signatureVerification,spUri);   
+				await verifyPKIIdentity(signaturePayload,signatureVerification,(spUri && typeof spUri == "string" && spUri.length>0?[spUri]:spUri));   
               	await verifySignatureExpiry(signaturePayload,signatureVerification);
               
                 let timeStamp = signaturePayload.signedString.substring(signaturePayload.signedString.lastIndexOf("timestamp")+10).trim();
@@ -2799,6 +2802,187 @@
                 docVerificationContext.signatureValidFromStatus !='unspecified' &&
                 (!clientApp || !clientApp.isFlaggedIdentity(docVerificationContext)) && 
                 !docVerificationContext.certChainVerification.chain.find(c=>c.finger_print == demoTrustAnchorFingerprint));
+    }
+
+    /**********************************************************************************************
+     *	AI GENERATED from UI markup structure.													  *
+     **********************************************************************************************/
+    function getVerificationResult(docVerificationContext) {
+      if (!docVerificationContext) return null;
+
+      const result = {};
+
+      // Trustworthiness
+      const trustworthy = isClaimTrustworthy(docVerificationContext);
+
+      result.trust = {
+        isTrustworthy: trustworthy
+      };
+
+      if (trustworthy) {
+        result.trust.message = "This Claim Is Trustworthy";
+        if (docVerificationContext.claimPurpose) {
+          result.trust.intendedPurpose = docVerificationContext.claimPurpose;
+        }
+      } else {
+        result.trust.message = "This Claim Is Not Trustworthy";
+        result.trust.errors = buildErrorList(docVerificationContext) || [];
+      }
+
+      // Verified Information
+      const verifiedFieldsRaw = filterVerificationFields(
+        docVerificationContext,
+        docVerificationContext.fieldVerification.fields,
+        true,
+        true
+      );
+
+      if (verifiedFieldsRaw && verifiedFieldsRaw.length > 0) {
+        result.verifiedInformation = {
+          title: "Verified Information",
+          fields: []
+        };
+
+        const rebuiltVerified = rebuildVerificationFields(
+          docVerificationContext,
+          docVerificationContext.fieldVerification.fields,
+          true,
+          true
+        );
+
+        rebuiltVerified.forEach(field => {
+          result.verifiedInformation.fields.push({
+            name: field.plainField.name,
+            value: field.plainField.value
+          });
+        });
+
+        // Trusted Vouch Verifications
+        if (docVerificationContext.trustedVouchVerifications) {
+          result.verifiedInformation.trustedVouches = [];
+
+          docVerificationContext.trustedVouchVerifications.forEach(vouchVerification => {
+            const rebuiltVouchFields = rebuildVerificationFields(
+              vouchVerification,
+              vouchVerification.fieldVerification.fields,
+              true,
+              true
+            );
+
+            const vouchFields = rebuiltVouchFields.map(field => ({
+              name: field.plainField.name,
+              value: field.plainField.value
+            }));
+
+            result.verifiedInformation.trustedVouches.push({
+              fields: vouchFields
+            });
+          });
+        }
+      }
+
+      // Unverified Information
+      const unverifiedFieldsRaw = filterVerificationFields(
+        docVerificationContext,
+        docVerificationContext.fieldVerification.fields,
+        false,
+        true
+      );
+
+      if (unverifiedFieldsRaw && unverifiedFieldsRaw.length > 0) {
+        result.unverifiedInformation = {
+          title: "Unverified Information",
+          fields: []
+        };
+
+        const rebuiltUnverified = rebuildVerificationFields(
+          docVerificationContext,
+          docVerificationContext.fieldVerification.fields,
+          false,
+          true
+        );
+
+        rebuiltUnverified.forEach(field => {
+          result.unverifiedInformation.fields.push({
+            name: field.plainField.name,
+            value: field.plainField.value
+          });
+        });
+      }
+
+      // Owner Identity Information
+      if (
+        docVerificationContext.pkiIdentityVerified &&
+        docVerificationContext["pki-identity"] &&
+        docVerificationContext["pki-identity"]["pki-sp-id-anchor-token"]
+      ) {
+        result.ownerIdentityInformation = {
+          id: docVerificationContext["pki-identity"]["pki-sp-id-anchor-token"],
+          personaType:
+            docVerificationContext["pki-identity"]["pki-sp-id-anchor-token-persona"],
+          validForReceiver: docVerificationContext.spUri,
+          basedOnIdentityElement:
+            docVerificationContext["pki-identity"]["pki-id-anchor-element"]
+        };
+      }
+
+      // Untrusted Vouches
+      if (
+        docVerificationContext.untrustedVouches &&
+        docVerificationContext.untrustedVouches.length > 0
+      ) {
+        result.vouching = [];
+
+        docVerificationContext.untrustedVouches.forEach(vouch => {
+          const vouchObj = {};
+
+          // Claims Vouched For
+          vouchObj.claimsVouchedFor = (vouch.fields || [])
+            .filter(field =>
+              (field.plainField.name && field.plainField.name.length > 0) ||
+              (field.plainField.value && field.plainField.value.length > 0)
+            )
+            .map(field => ({
+              label:
+                field.plainField.name && field.plainField.value
+                  ? field.plainField.name
+                  : "Claim",
+              value:
+                field.plainField.value && field.plainField.value.length > 0
+                  ? field.plainField.value
+                  : field.plainField.name
+            }));
+
+          // Vouch Issuer
+          vouchObj.issuer = Object.keys(vouch.issuer || {}).map(fieldName => ({
+            fieldName,
+            value: vouch.issuer[fieldName]
+          }));
+
+          // Supporting Statements
+          if (vouch.supportingStatements && vouch.supportingStatements.length > 0) {
+            vouchObj.supportingStatements = vouch.supportingStatements
+              .filter(field =>
+                (field.plainField.name && field.plainField.name.length > 0) ||
+                (field.plainField.value && field.plainField.value.length > 0)
+              )
+              .map(field => ({
+                label:
+                  field.plainField.name && field.plainField.value
+                    ? field.plainField.name
+                    : "Statement",
+                value:
+                  field.plainField.value && field.plainField.value.length > 0
+                    ? field.plainField.value
+                    : field.plainField.name
+              }));
+          }
+
+          result.vouching.push(vouchObj);
+        });
+      }
+
+      return result;
     }
 
     function buildErrorList(docVerificationContext){
@@ -3773,6 +3957,7 @@
       signAlg,
       isTrustAnchor,
       updateCertTrustchainPrivacy,
+      getVerificationResult,
       PKI_CERT_VERSION,
       SET_SDK_MODE
     };
