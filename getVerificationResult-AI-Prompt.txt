@@ -1,0 +1,194 @@
+I am going to give you a markup snippet whose structure should be thought of as the structure of an output objective, given a certain input object. 
+The markup makes references to functions, use those functions in the code you write.
+
+The function I want you to write is JavaScript with the following signature:
+
+getVerificationResult(docVerification)
+
+The output object structure should map to the data elements displayed by the markup.
+
+This function should use the markup structure as a guide for the object it returns.
+
+Here is the markup: 
+<span v-if="docVerificationContext">
+		  <v-card flat v-if="isClaimTrustworthy(docVerificationContext)">
+            <v-card-text> 
+              <v-chip>This Claim Is Trustworthy</v-chip>
+              <p v-if="docVerificationContext.claimPurpose">
+                <v-text-field label="Intended Purpose" :value="docVerificationContext.claimPurpose"></v-text-field>
+              </p>
+            </v-card-text>
+          </v-card>
+
+		  <v-card flat v-if="!isClaimTrustworthy(docVerificationContext)">
+            <v-card-text>
+              <h2>This Claim Is Not Trustworthy</h2>
+              
+              <p v-for="errorText in buildErrorList(docVerificationContext)">
+                 &#8250;{{errorText}}
+              </p>
+            </v-card-text>
+          </v-card>
+          
+          <v-card flat v-if="filterVerificationFields(docVerificationContext,docVerificationContext.fieldVerification.fields,true,true).length>0">
+
+            <v-card-text>   
+			  <h2>Verified Information</h2>
+              
+              <v-list>
+                <v-list-item v-for="field in rebuildVerificationFields(docVerificationContext,docVerificationContext.fieldVerification.fields,true,true)">
+                  
+                    <v-list-item-title>
+                    	&#10003;<b>{{ field.plainField.name }}</b>            
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      {{ field.plainField.value }}
+                    </v-list-item-subtitle>
+                  
+                </v-list-item>
+              </v-list>
+              
+			  <v-list v-if="docVerificationContext.trustedVouchVerifications" v-for="vouchVerification in docVerificationContext.trustedVouchVerifications">
+                <v-list-item v-for="field in rebuildVerificationFields(vouchVerification,vouchVerification.fieldVerification.fields,true,true)">
+                                    
+                    <v-list-item-title>
+                    	&#10003;<b>{{ field.plainField.name }}</b>            
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      {{ field.plainField.value }}
+                    </v-list-item-subtitle>
+                  
+                </v-list-item>
+              </v-list>              
+              
+            </v-card-text>
+          </v-card>              
+          
+          <v-card flat v-if="filterVerificationFields(docVerificationContext,docVerificationContext.fieldVerification.fields,false,true).length>0">
+            
+            <v-card-text color="grey" text-color="white">
+              <h2>Unverified Information</h2>
+              
+              <v-list>
+                <v-list-item v-for="field in rebuildVerificationFields(docVerificationContext,docVerificationContext.fieldVerification.fields,false,true)">
+
+                    <v-list-item-title>
+                    	&#8250;<b>{{ field.plainField.name }}</b>            
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      {{ field.plainField.value }}
+                    </v-list-item-subtitle>
+                  
+                </v-list-item>
+              </v-list>   
+            </v-card-text>
+          </v-card> 
+
+          <v-card flat v-if="((docVerificationContext.pkiIdentityVerified && docVerificationContext['pki-identity']['pki-sp-id-anchor-token']))">
+
+            <v-card-text>
+              <h2>Owner Identity Information</h2>
+              
+              <strong>ID</strong>:
+              <v-chip small color="grey" text-color="white">
+                {{(docVerificationContext['pki-identity']['pki-sp-id-anchor-token'])}}
+              </v-chip> <br>
+              <strong>ID</strong> persona type:
+              <v-chip small color="grey" text-color="white">
+                {{docVerificationContext["pki-identity"]["pki-sp-id-anchor-token-persona"]}}
+              </v-chip> <br>
+              <span v-if="docVerificationContext['pki-identity']['pki-sp-id-anchor-token']">
+                  <strong>ID</strong> is only valid for receiver:
+                  <v-chip small color="grey" text-color="white">
+                    {{docVerificationContext.spUri }}
+                  </v-chip> <br>
+                  <strong>ID</strong> based on identity element:
+                  <v-chip small color="grey" text-color="white">
+                    {{docVerificationContext["pki-identity"]["pki-id-anchor-element"]}}
+                  </v-chip>
+              </span>
+              
+            </v-card-text>
+
+          </v-card>              
+          
+          <v-card flat v-if="docVerificationContext.untrustedVouches && docVerificationContext.untrustedVouches.length>0">
+            
+            <v-card-text>
+              <h2>Vouching</h2>
+              <br>
+              <v-card flat v-for="vouch in docVerificationContext.untrustedVouches">
+                
+				  <v-card flat>
+                    <v-card-title>          
+                      <h3>Claims Vouched For</h3>
+                    </v-card-title>
+                    <v-card-text>
+                        
+                      <span v-for="field in vouch.fields">
+                        <v-textarea
+                          v-if="((field.plainField.name && field.plainField.name.length>0) || (field.plainField.value && field.plainField.value.length>0))"
+                          :label="((field.plainField.name && field.plainField.name.length>0 && field.plainField.value && field.plainField.value.length>0)?field.plainField.name:'Claim')"
+                          :model-value="((field.plainField.value && field.plainField.value.length>0)?field.plainField.value:field.plainField.name)"
+                          hide-details
+                          rows="1"
+                          auto-grow
+                         ></v-textarea>
+                      </span>
+                    </v-card-text>
+                  </v-card>
+                
+                  <v-card flat>
+                    <v-card-title>          
+                      <h3>Vouch Issuer</h3>
+                    </v-card-title>
+                    <v-card-text>                        	
+                        <v-list>
+                          <v-list-item v-for="fieldName in Object.keys(vouch.issuer)">
+                            
+                              <v-icon color="green">check</v-icon> 
+                            
+                              <v-list-item-title>
+                                  <b>{{fieldName}}</b>            
+                              </v-list-item-title>
+                              <v-list-item-subtitle>
+                                {{  vouch.issuer[fieldName] }}
+                              </v-list-item-subtitle>
+                            
+                          </v-list-item>
+                        </v-list>
+                      
+                      
+                    </v-card-text>
+                  </v-card>
+                
+				  <v-card flat v-if="vouch.supportingStatements && vouch.supportingStatements.length>0">
+
+                    <v-card-text>
+                      <v-chip label class="ma-0">
+                        Supporting Statements
+                      </v-chip>
+                      <br>
+                      <br>
+                      <span v-for="field in vouch.supportingStatements">
+
+                        <v-textarea
+                          v-if="((field.plainField.name && field.plainField.name.length>0) || (field.plainField.value && field.plainField.value.length>0))"
+                          :label="((field.plainField.name && field.plainField.name.length>0 && field.plainField.value && field.plainField.value.length>0)?field.plainField.name:'Statement')"
+                          :model-value="((field.plainField.value && field.plainField.value.length>0)?field.plainField.value:field.plainField.name)"
+                          hide-details
+                          rows="1"
+                          auto-grow
+                         ></v-textarea>
+                      </span>
+                      
+                    </v-card-text>
+                  </v-card>
+                
+                  <hr v-if="(docVerificationContext.untrustedVouches.indexOf(vouch)<docVerificationContext.untrustedVouches.length-1)">
+                
+              </v-card>
+              
+            </v-card-text>
+          </v-card>
+</span>
