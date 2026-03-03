@@ -79,6 +79,7 @@ The verifier exposes the following API functions to faciliate claim verification
       You can look at the console app UI code (`index.html`) to see how it maps to verification UI result.
 
     **Usage** 
+    
     This is optional, if there are vouched-for claims, verify them. 
     First ensure presenting claim is valid then you can care about any embedded vouched-for claims.
     
