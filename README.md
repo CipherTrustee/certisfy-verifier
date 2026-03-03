@@ -44,6 +44,7 @@ The verifier exposes the following API functions to faciliate claim verification
     - `receiverId`\
       The receiver id (ie persona) for which the claim should have been generated. 
       Note, if you ommit or pass `null` for `receiverId`, it is assumed `receiverId` match is irrelevant and thus the corresponding verification flag (`pkiIdentityReceiverMatch`) for receiver match is set to true. 
+      
       Not the most intuitive logic but it is, what it is. 
       Bottom line, this should not be an issue since you should always verify a claim against a particular receiver id. 
       `receiverId` can be text or it can be an array of receiver ids that you want the claim verified against.
@@ -51,9 +52,10 @@ The verifier exposes the following API functions to faciliate claim verification
     - `useAttachedTrustChain`\
       Set this to true so the verifier will accept trust chains attached to claims. 
       You can also just pass a trust chain that should be used. If not set or set to false, this verifier will fail because of a lack of access to the trust chain. 
+      
       Within the Certisfy app, attached trust chains can be ignored since the Certisfy certificate registry can be consulted for trust chains, ie if the full trust chain is in fact in the registry.
 
-    **Usage** \
+    **Usage** 
     
     ```javascript
     const verification = await certisfyCrypto.verifyClaim(claim,receiverId,claim.trustChain || true);
@@ -76,7 +78,7 @@ The verifier exposes the following API functions to faciliate claim verification
       This contains details from the verification process. 
       You can look at the console app UI code (`index.html`) to see how it maps to verification UI result.
 
-    **Usage**\
+    **Usage** 
     This is optional, if there are vouched-for claims, verify them. 
     First ensure presenting claim is valid then you can care about any embedded vouched-for claims.
     
@@ -85,7 +87,7 @@ The verifier exposes the following API functions to faciliate claim verification
        await certisfyCrypto.verifyVouches(claim,verification);
     ```
 
-3. `getVerificationResult(verification)`\
+3. `getVerificationResult(verification)`
 
     This function transforms the `verification` object into something easier to use. 
     The resulting object maps to the intuitive UI presentation. 
