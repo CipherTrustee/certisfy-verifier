@@ -16,8 +16,10 @@ The code required for verification is in the `/js/crypto` folder, the required m
 
 ### The verifier test console
 
-The verifier test console app can be accessed here: [https://certisfy.com/verifier/](https://certisfy.com/verifier/) 
+The verifier test console app can be accessed here: [https://certisfy.com/verifier/](https://certisfy.com/verifier/).
+
 The point of the console app is primarily to demonstrate claim verification independent of the Certisfy app ([https://certisfy.com/app/](https://certisfy.com/app/)). 
+
 The way to use it is to generate claims from the Certisfy app, then use the verifier to verify the claims.
 
 *You must attach the trust chain when creating your claim in the Certisfy app in order to be able to verify via the verifier.*
