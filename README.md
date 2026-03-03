@@ -7,13 +7,12 @@ This verifier is for use by developers to verify Certisfy claims within apps & s
 The verifier has no other dependencies except crypto functionality via pkijs ([https://pkijs.org/](https://pkijs.org/)), the required dependencies are already included.
 
 The code required for verification is in the `/js/crypto` folder, the required module import and setup is below:
-`
-  <script type="module"> 
-    import * as certisfyCrypto from "./js/crypto/pkijs-impl-module.js" 
-    certisfyCrypto.SET_SDK_MODE(true); 
-    certisfyCrypto.loadTrustRoots() 
-  </script>
-`
+
+```javascript
+   import * as certisfyCrypto from "./js/crypto/pkijs-impl-module.js" 
+   certisfyCrypto.SET_SDK_MODE(true); 
+   certisfyCrypto.loadTrustRoots();
+```
 
 ### The verifier test console
 
@@ -32,66 +31,68 @@ Currently a verifier is available only for Javascript.
 
 The verifier exposes the following API functions to faciliate claim verification.
 
-1. `verifyClaim(claim,receiverId,useAttachedTrustChain)`\
+1. `verifyClaim(claim,receiverId,useAttachedTrustChain)`
 
     This function performs verification of claims, it is the function called when you click the verify button
-    in Certisfy and in the verifier console app.\
+    in Certisfy and in the verifier console app.
 
-    **Arguments**\
+    **Arguments**
 
-    - claim\
+    - `claim`\
       Claim from Certisfy, can take either text or json object 
 
-    - receiverId\
+    - `receiverId`\
       The receiver id (ie persona) for which the claim should have been generated. 
       Note, if you ommit or pass `null` for `receiverId`, it is assumed `receiverId` match is irrelevant and thus the corresponding verification flag (`pkiIdentityReceiverMatch`) for receiver match is set to true. 
       Not the most intuitive logic but it is, what it is. 
       Bottom line, this should not be an issue since you should always verify a claim against a particular receiver id. 
-      `receiverId` can be text or it can be an array of receiver ids that you want the claim verified against.\
+      `receiverId` can be text or it can be an array of receiver ids that you want the claim verified against.
 
-    - useAttachedTrustChain\
+    - `useAttachedTrustChain`\
       Set this to true so the verifier will accept trust chains attached to claims. 
       You can also just pass a trust chain that should be used. If not set or set to false, this verifier will fail because of a lack of access to the trust chain. 
-      Within the Certisfy app, attached trust chains can be ignored since the Certisfy certificate registry can be consulted for trust chains, ie if the full trust chain is in fact in the registry.\
+      Within the Certisfy app, attached trust chains can be ignored since the Certisfy certificate registry can be consulted for trust chains, ie if the full trust chain is in fact in the registry.
 
     **Usage** \
-    `
+    
+    ```javascript
     const verification = await certisfyCrypto.verifyClaim(claim,receiverId,claim.trustChain || true);
-    `
+    ```
 
-2. `verifyVouches(claim,verification)`\
+2. `verifyVouches(claim,verification)`
 
     This function is used to verify any vouching associated with a claim. 
     Vouching allows additional claims to be attached to a main claim as vouched-for claims. 
     For instance someone credible can vouch that you attended a hackathon and you are a great dev, 
-    you can then attach such a vouch to a claim that you present to others.\
+    you can then attach such a vouch to a claim that you present to others.
 
-    **Arguments**\
+    **Arguments**
 
-    - claim\
+    - `claim`\
       Claim from Certisfy 
 
-    - verification\
+    - `verification`\
       This is the verification object returned from the call to `verifyClaim`. 
       This contains details from the verification process. 
       You can look at the console app UI code (`index.html`) to see how it maps to verification UI result.
 
     **Usage**\
     This is optional, if there are vouched-for claims, verify them. 
-    First ensure presenting claim is valid then you can care about any embedded vouched-for claims.\
-    `
+    First ensure presenting claim is valid then you can care about any embedded vouched-for claims.
+    
+    ```javascript
     if(certisfyCrypto.isClaimTrustworthy(verification)) 
        await certisfyCrypto.verifyVouches(claim,verification);
-    `
+    ```
 
 3. `getVerificationResult(verification)`\
 
     This function transforms the `verification` object into something easier to use. 
     The resulting object maps to the intuitive UI presentation. 
-    In the verifier console you can see this object attached as `verificationResult`.\
+    In the verifier console you can see this object attached as `verificationResult`.
 
-    **Arguments**\
+    **Arguments**
 
-    - verification\
-      This is the `verification` object that results from calling `verifyClaim`.\
+    - `verification`\
+      This is the `verification` object that results from calling `verifyClaim`.
 
