@@ -1224,6 +1224,41 @@
           });
           return certChainVerificationEngine.verify();      
     }
+
+	async function verifyPrivateCertChain(trustChain){
+      	let validChain = true;
+      
+        //check valid from
+        if(trustChain.validfrom_date>new Date().getTime()){
+          //throw new Error(`Pretermed certificate(${issuerThumbprint}) in trust chain.`);
+          console.warn(`Pretermed certificate in private trust chain.`);
+          validChain = false;
+        }
+      
+        //check expiry
+        if(new Date().getTime()>trustChain.expiration_date){
+          //throw new Error("Expired certificate in certificate chain.");
+          console.warn(`Expired certificate in private trust chain.`);
+          validChain = false;
+        }
+      
+      	const signedString = [];
+      
+      	signedString.push(trustChain.certs[0].finger_print);
+      
+      	signedString.push(trustChain.validfrom_date);
+        signedString.push(trustChain.expiration_date);
+      
+        signedString.push(trustChain.isValid);
+        signedString.push(trustChain.isTrustworthy);
+
+      	signedString.push(`timestamp=${trustChain.signature.timestamp}`);
+      
+        const signerCert = decodeCertificate(trustChainRoot.cert_text);
+        let verified = await verifyText(signedString.join(""),trustChain.signature.signature,signerCert);
+        
+      	return (validChain && verified);
+    }
     
 	async function verifyDocument(signer,fields,flatten,contextLeafCert,hmacKeyMask){
       
@@ -1700,7 +1735,7 @@
         let certVerification = {};
       
         let validChain = true;
-        let chain = useChain;
+        let chain = (useChain && typeof useChain == "object" && !Array.isArray(useChain))?useChain.certs:useChain;
         if(!chain || chain.length == 0){
         	 let trustChain = await getCertChain(finger_print);
              if(trustChain && trustChain.certs)
@@ -1773,9 +1808,10 @@
         }
       
 		if(chain.length == 1 && issuerIsPrivate(chain[0])){
+            let isValidPrivateChain = (useChain && typeof useChain == "object" && !Array.isArray(useChain))?(await verifyPrivateCertChain(useChain)):false;
           	//console.log("platform validate",validate,validChain,chain[0].isTrustworthy)
-			certVerification["certificateVerified"]= (validate && validChain && chain[0].isTrustworthy);
-            return certVerification;          
+			certVerification["certificateVerified"]= (validate && validChain && isValidPrivateChain && chain[0].isTrustworthy);
+            return certVerification;
         }      
       
         try
@@ -2400,6 +2436,7 @@
                          }
                        
 						 if(issuerIsPrivate(trustChain.certs[0])){
+                           
 						     let chain = await getCertChainWithStatus(trustChain.certs);
                              
                            	 if(!issuerIsPrivate(chain[0])){//issuer is no longer private                                
@@ -2407,7 +2444,9 @@
                                 await resolveFullChain()
                              }
                              else
+                             { 
                                 trustChain.certs = [chain[0]];
+                             }
                          }
                          else
                          {
@@ -2436,7 +2475,7 @@
                   "signatureVerified":verified
                 };
 
-                signatureVerification["certChainVerification"]= (await buildTrustedCertChain(signaturePayload.signerID,trustChain.certs));
+                signatureVerification["certChainVerification"]= (await buildTrustedCertChain(signaturePayload.signerID,trustChain));
 
                 if(signatureVerification["certChainVerification"].chain.length>0)
                   	signatureVerification["certificateIsTrustAnchor"] = (await isTrustAnchor(signatureVerification["certChainVerification"].chain[0].cert_text,trustChain.certs));
@@ -3834,7 +3873,8 @@
       
 			if(includeTC){
                 //This will recursively resolve the trust chain and attach the whole thing
-      			sigPayload.trustChain = await getCertChainFromLocalStore(signer.finger_print);
+      			//sigPayload.trustChain = await getCertChainFromLocalStore(signer.finger_print);
+                sigPayload.trustChain = await getCertChain(signer.finger_print,false,false);
               
                 /*
                 sigPayload.trustChain = await getCertChain(signer.finger_print);
