@@ -537,10 +537,17 @@
     }
 
 	async function getLocalCert(finger_print){
-        let certEntry = clientApp.findCertificate(finger_print);
-        let certExport = await exportCertificate(certEntry.cert_text,Object.assign({"fromLocalStore":true},copyFromObject(certEntry,["issuer_finger_print"])))
-        return {certExport,certEntry};
+        if(clientApp){
+            let certEntry = clientApp.findCertificate(finger_print);
+            let certExport = await exportCertificate(certEntry.cert_text,Object.assign({"fromLocalStore":true},copyFromObject(certEntry,["issuer_finger_print"])))
+            return {certExport,certEntry};
+        }
     }
+
+	function isLocalCert(finger_print){
+        return (clientApp && clientApp.findCertificate(finger_print));
+    }
+
 
 	async function getCertChainFromLocalStore(finger_print,chain_health_check,ignoreIssuerPrivacy){
           //attempt to resolve chain, always prioritize registry lookup over 
@@ -1228,6 +1235,13 @@
 	async function verifyPrivateCertChain(trustChain){
       	let validChain = true;
       
+      	if(!trustChain.validfrom_date || !trustChain.expiration_date){
+            if(trustChain.certs.length == 1 && issuerIsPrivate(trustChain.certs[0])  && isLocalCert(trustChain.certs[0]))//allow this, it useful for testing 
+              return true;
+          
+          	return false;
+        }
+      
         //check valid from
         if(trustChain.validfrom_date>new Date().getTime()){
           //throw new Error(`Pretermed certificate(${issuerThumbprint}) in trust chain.`);
@@ -1721,7 +1735,7 @@
     async function buildTrustedCertChain(fingerPrint,useChain){
 		let certChainVerification = await buildCertChain(fingerPrint,true,useChain);
 
-        if(certChainVerification.certificateVerified && (certChainVerification.chain.length>1 || !certChainVerification.chain[0].isTrustworthy))
+        if(certChainVerification.certificateVerified && (certChainVerification.chain.length>1))
       		certChainVerification["certificateVerified"] = await isTrustedChain(certChainVerification.chain);
 
         return certChainVerification;
@@ -1809,8 +1823,8 @@
       
 		if(chain.length == 1 && issuerIsPrivate(chain[0])){
             let isValidPrivateChain = (useChain && typeof useChain == "object" && !Array.isArray(useChain))?(await verifyPrivateCertChain(useChain)):false;
-          	//console.log("platform validate",validate,validChain,chain[0].isTrustworthy)
-			certVerification["certificateVerified"]= (validate && validChain && isValidPrivateChain && chain[0].isTrustworthy);
+          	//console.log("platform validate",isValidPrivateChain,validate,validChain/*,chain[0].isTrustworthy*/)
+			certVerification["certificateVerified"]= (validate && validChain && isValidPrivateChain /*&& chain[0].isTrustworthy*/);
             return certVerification;
         }      
       
@@ -2426,6 +2440,13 @@
                 }
               	else//any supplied trust chain must start with leaf
                 {
+                     //isTrustworthy on individual certs is only valid if it comes directly from registry
+                     if(trustChain){
+                         for(const cert of trustChain.certs){
+                            delete cert["isTrustworthy"]//don't allow user supplied value
+                         }
+                     }
+                  
                      if(trustChainRoot && trustChain.certs[trustChain.certs.length-1].finger_print != trustChainRoot.finger_print){//get the rest of the trust chain
 
                          const resolveFullChain = async ()=>{
