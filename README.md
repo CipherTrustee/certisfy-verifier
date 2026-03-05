@@ -121,7 +121,7 @@ The verifier exposes the following API functions to faciliate claim verification
     
     Below is an example showing the structure of the resulting object.
     
-    https://github.com/CipherTrustee/certisfy-verifier/blob/6c0708eb1fc03b16e4ab7d2c7dd366218e508cd7/verificationResult.json
+    [verificationResult.json](https://github.com/CipherTrustee/certisfy-verifier/blob/6c0708eb1fc03b16e4ab7d2c7dd366218e508cd7/verificationResult.json)
     
 4. `isClaimTrustworthy(verification)`
 
