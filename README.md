@@ -125,7 +125,9 @@ The verifier exposes the following API functions to faciliate claim verification
     confirming cryptographic signature integrity and certificate validity. The function makes the determination
     strictly based on the result of verification, ie it doesn't do any additional verification itself.
     
-    Review the (implementatation)[https://github.com/CipherTrustee/certisfy-verifier/blob/9accd2917cae7bfd1503dde2d74cbed7738245c8/js/crypto/pkijs-impl-module.js#L2840] code to see what the exact conditions are for trustworthiness determination.
+    Review the implementatation code to see what the exact conditions are for trustworthiness determination.
+    
+	https://github.com/CipherTrustee/certisfy-verifier/blob/9accd2917cae7bfd1503dde2d74cbed7738245c8/js/crypto/pkijs-impl-module.js#L2840
 
     **Arguments**
 
