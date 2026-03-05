@@ -121,72 +121,7 @@ The verifier exposes the following API functions to faciliate claim verification
     
     Below is an example showing the structure of the resulting object.
     
-    ```json    
-      {
-        "trust": {
-          "isTrustworthy": true,
-          "message": "This Claim Is Trustworthy"
-        },
-        "verifiedInformation": {
-          "title": "Verified Information",
-          "fields": [
-            {
-              "name": "Name",
-              "value": "Edmond Kemokai"
-            }
-          ],
-          "trustedVouches": [
-            {
-              "fields": []
-            }
-          ]
-        },
-        "unverifiedInformation": {
-          "title": "Unverified Information",
-          "fields": [
-            {
-              "name": "Hood",
-              "value": "Uptown"
-            }
-          ]
-        },
-        "ownerIdentityInformation": {
-          "id": "22157ce53a010925c03712d0fe5012b4808612eb74ae3a6521ecf5f17f11842b",
-          "personaType": "public",
-          "basedOnIdentityElement": "US_DLN"
-        },
-        "vouching": [
-          {
-            "claimsVouchedFor": [
-              {
-                "label": "Hard worker",
-                "value": "Indeed"
-              }
-            ],
-            "issuer": [
-              {
-                "fieldName": "Name",
-                "value": "Edmond Kemokai"
-              },
-              {
-                "fieldName": "Occupation",
-                "value": "Founder/CEO | Cipheredtrust,Certisfy"
-              },
-              {
-                "fieldName": "Location",
-                "value": "Baltimore City"
-              }
-            ],
-            "supportingStatements": [
-              {
-                "label": "Statement",
-                "value": "Edmond is a highly dependable"
-              }
-            ]
-          }
-        ]
-      }
-    ```
+    https://github.com/CipherTrustee/certisfy-verifier/blob/6c0708eb1fc03b16e4ab7d2c7dd366218e508cd7/verificationResult.json
     
 4. `isClaimTrustworthy(verification)`
 
