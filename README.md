@@ -118,3 +118,24 @@ The verifier exposes the following API functions to faciliate claim verification
 	
     The `verificationResult` object represents a simplier and more intuitive object that shows the result of verification.
     Review the console results to see what it looks like.
+    
+4. `isClaimTrustworthy(verification)`
+
+    This function determines whether a verification can be considered trustworthy. The determination involves
+    confirming cryptographic signature integrity and certificate validity. The function makes the determination
+    strictly based on the result of verification, ie it doesn't do any additional verification itself.
+    
+    Review the (implementatation)[https://github.com/CipherTrustee/certisfy-verifier/blob/9accd2917cae7bfd1503dde2d74cbed7738245c8/js/crypto/pkijs-impl-module.js#L2840] code to see what the exact conditions are for trustworthiness determination.
+
+    **Arguments**
+
+    - `verification`\
+      This is the `verification` object that results from calling `verifyClaim`.
+
+    **Usage** 
+    
+    ```javascript
+    const isTrustworthy = isClaimTrustworthy(verification);
+    ```
+	
+    The result is true or false.    
