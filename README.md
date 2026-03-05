@@ -119,6 +119,75 @@ The verifier exposes the following API functions to faciliate claim verification
     The `verificationResult` object represents a simplier and more intuitive object that shows the result of verification.
     Review the console results to see what it looks like.
     
+    Below is an example showing the structure of the resulting object.
+    
+    ```json    
+      {
+        "trust": {
+          "isTrustworthy": true,
+          "message": "This Claim Is Trustworthy"
+        },
+        "verifiedInformation": {
+          "title": "Verified Information",
+          "fields": [
+            {
+              "name": "Name",
+              "value": "Edmond Kemokai"
+            }
+          ],
+          "trustedVouches": [
+            {
+              "fields": []
+            }
+          ]
+        },
+        "unverifiedInformation": {
+          "title": "Unverified Information",
+          "fields": [
+            {
+              "name": "Hood",
+              "value": "Uptown"
+            }
+          ]
+        },
+        "ownerIdentityInformation": {
+          "id": "22157ce53a010925c03712d0fe5012b4808612eb74ae3a6521ecf5f17f11842b",
+          "personaType": "public",
+          "basedOnIdentityElement": "US_DLN"
+        },
+        "vouching": [
+          {
+            "claimsVouchedFor": [
+              {
+                "label": "Hard worker",
+                "value": "Indeed"
+              }
+            ],
+            "issuer": [
+              {
+                "fieldName": "Name",
+                "value": "Edmond Kemokai"
+              },
+              {
+                "fieldName": "Occupation",
+                "value": "Founder/CEO | Cipheredtrust,Certisfy"
+              },
+              {
+                "fieldName": "Location",
+                "value": "Baltimore City"
+              }
+            ],
+            "supportingStatements": [
+              {
+                "label": "Statement",
+                "value": "Edmond is a highly dependable"
+              }
+            ]
+          }
+        ]
+      }
+    ```
+    
 4. `isClaimTrustworthy(verification)`
 
     This function determines whether a verification can be considered trustworthy. The determination involves
