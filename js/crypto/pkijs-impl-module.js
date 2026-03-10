@@ -2885,7 +2885,7 @@
     /**********************************************************************************************
      *	AI GENERATED from UI markup structure.													  *
      **********************************************************************************************/
-    function getVerificationResult(docVerificationContext) {
+    function getVerificationResult(docVerificationContext,includeInternalFields) {
       if (!docVerificationContext) return null;
 
       const result = {};
@@ -2912,7 +2912,8 @@
         docVerificationContext,
         docVerificationContext.fieldVerification.fields,
         true,
-        true
+        true,
+        includeInternalFields
       );
 
       if (verifiedFieldsRaw && verifiedFieldsRaw.length > 0) {
@@ -2925,7 +2926,8 @@
           docVerificationContext,
           docVerificationContext.fieldVerification.fields,
           true,
-          true
+          true,
+          includeInternalFields
         );
 
         rebuiltVerified.forEach(field => {
@@ -2944,7 +2946,8 @@
               vouchVerification,
               vouchVerification.fieldVerification.fields,
               true,
-              true
+              true,
+              includeInternalFields
             );
 
             const vouchFields = rebuiltVouchFields.map(field => ({
@@ -2964,7 +2967,8 @@
         docVerificationContext,
         docVerificationContext.fieldVerification.fields,
         false,
-        true
+        true,
+        includeInternalFields
       );
 
       if (unverifiedFieldsRaw && unverifiedFieldsRaw.length > 0) {
@@ -2977,7 +2981,8 @@
           docVerificationContext,
           docVerificationContext.fieldVerification.fields,
           false,
-          true
+          true,
+          includeInternalFields
         );
 
         rebuiltUnverified.forEach(field => {
@@ -3159,11 +3164,11 @@
        return ((docVerificationContext.certChainVerification.certificateVerified) && (field.plainField.certificateVerified && (typeof field.maskedField == 'undefined' || field.maskedField.certificateVerified)));      
     }
 
-    function rebuildVerificationField(field){
+    function rebuildVerificationField(field,includeInternalFields){
            let metaPlainField = {};
            for(let key in field.plainField)
            {
-               if(isInternalFieldName(key))
+               if((!includeInternalFields || !includeInternalFields.includes(key)) && isInternalFieldName(key))
                  metaPlainField[key] = field.plainField[key];
                else
                {
@@ -3175,7 +3180,7 @@
            let metaMaskedField = {};
            for(let key in field.maskedField)
            {
-               if(isInternalFieldName(key))
+               if((!includeInternalFields || !includeInternalFields.includes(key)) && isInternalFieldName(key))
                  metaMaskedField[key] = field.maskedField[key];
                else
                {
@@ -3197,12 +3202,13 @@
                  return true;
     }
 
-    function filterVerificationFields(docVerificationContext,fields,verified,hideInternal){
+    function filterVerificationFields(docVerificationContext,fields,verified,hideInternal,includeInternalFields){
         const resultSet = [];
         for(var i=0;i<fields.length;i++)
         {
-            var field = fields[i];
-            if(hideInternal && isInternalField(field))
+            var field = fields[i];            
+          
+            if((!includeInternalFields || !includeInternalFields.includes(Object.keys(field.plainField)[0])) && hideInternal && isInternalField(field))
               continue;
 
             if(verified && isVerifiedField(docVerificationContext,field))
@@ -3221,16 +3227,16 @@
         return resultSet;
     }
 
-    function rebuildVerificationFields(docVerificationContext,fields,verificationFilter,internalFieldFilter){    
+    function rebuildVerificationFields(docVerificationContext,fields,verificationFilter,internalFieldFilter,includeInternalFields){    
         let filteredFields = fields;
         if(typeof verificationFilter != "undefined")
-          filteredFields = filterVerificationFields(docVerificationContext,fields,verificationFilter,internalFieldFilter);
+          filteredFields = filterVerificationFields(docVerificationContext,fields,verificationFilter,internalFieldFilter,includeInternalFields);
 
         let metaFields = [];
         for(let i=0;i<filteredFields.length;i++)
         {
            let field = filteredFields[i];      
-           metaFields.push(rebuildVerificationField(field));       
+           metaFields.push(rebuildVerificationField(field,includeInternalFields));       
         }
         //console.log("metaFields",metaFields)
         return metaFields;
