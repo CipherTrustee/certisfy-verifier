@@ -169,6 +169,13 @@
         return false;
   	}
 
+	function randomUUID(preferredCrypto){
+    	if(preferredCrypto && preferredCrypto.randomUUID)
+          return preferredCrypto.randomUUID();
+      
+      	return crypto.randomUUID();
+    }
+
     async function shaHex(message,algo) {
       const msgUint8 = typeof message == "string"?new TextEncoder().encode(message):message; // encode as (utf-8) Uint8Array
       const hashBuffer = await crypto.subtle.digest(algo, msgUint8); // hash the message
@@ -2157,7 +2164,7 @@
         if(field.name == "pki-asym-encryption-key")
           	return plainField;        
       
-      	let hmacKey = field.hmacKey?field.hmacKey:crypto.randomUUID().replaceAll("-","");
+      	let hmacKey = field.hmacKey?field.hmacKey:randomUUID().replaceAll("-","");
       
         //hash structurally instead of blindly hashing
         const hashedPlainField = await hashPlainField(plainField,PUBLIC_PLAIN_FIELDS,null,false,hmacKey,!hashInput);
@@ -2324,7 +2331,7 @@
         
       	const stringToSignObject = JSON.parse(stringToSign);
 		if(stringToSignObject.maskedFields){
-            const hmk = crypto.randomUUID().replaceAll("-","");
+            const hmk = randomUUID().replaceAll("-","");
             let auxField = {
               "name":("pki-hmac-keys"),
               "value":JSON.stringify(stringToSignObject.maskedFields.map(f=>f.hmacKey).concat([hmk])),
@@ -3412,7 +3419,7 @@
         }
         else      
         if(identityCertSig){
-            let pkiIdentity = identityCertSig["pki-identity"]?identityCertSig["pki-identity"]:await wrapCertIdentity(JSON.stringify(identityCertSig),"certisfy.com",JSON.stringify(identityCertSig));//idCert?await extractIdentityAnchorElement(idCert,crypto.randomUUID().replaceAll("-","")):null;
+            let pkiIdentity = identityCertSig["pki-identity"]?identityCertSig["pki-identity"]:await wrapCertIdentity(JSON.stringify(identityCertSig),"certisfy.com",JSON.stringify(identityCertSig));//idCert?await extractIdentityAnchorElement(idCert,randomUUID().replaceAll("-","")):null;
             let certIdInfo = pkiIdentity["pki-owner-id-info"];
             ownerIdCloak = certIdInfo?certIdInfo.ownerIdCloak:null;
         }
@@ -3432,7 +3439,7 @@
           
             let idCertSig = await signClaim(idCert,JSON.stringify(idFields),null,null,"certisfy.com",includeIdCertSigTrustChain);
 
-            let pkiIdentity = await wrapCertIdentity(JSON.stringify(idCertSig),"certisfy.com",JSON.stringify(idCertSig));//idCert?await extractIdentityAnchorElement(idCert,crypto.randomUUID().replaceAll("-","")):null;
+            let pkiIdentity = await wrapCertIdentity(JSON.stringify(idCertSig),"certisfy.com",JSON.stringify(idCertSig));//idCert?await extractIdentityAnchorElement(idCert,randomUUID().replaceAll("-","")):null;
             let certIdInfo = pkiIdentity["pki-owner-id-info"];
             ownerIdCloak = certIdInfo?certIdInfo.ownerIdCloak:null;
         }
@@ -3479,7 +3486,7 @@
                 let fieldNameHash = await sha2Hex(fieldName);
                 let fieldHash = (field?await sha2Hex(field):field);
                
-                let hmacKey = crypto.randomUUID().replaceAll("-","");
+                let hmacKey = randomUUID().replaceAll("-","");
 
                 let fieldContainer = {};
                 let maskedField = {};
@@ -3678,8 +3685,9 @@
     }
 
     async function createCert(csrPEM,startDateText,expireDateText,privateKey,delegateSigningAuthority,lateralLimit,issuer,certisfy_stripe_token,approvedCSRFields,encryptIssuerFingerPrint){
-      
+        const crypto = pkijs.getCrypto(true);
         let signerPrivateKey =  fromPEM(issuer?issuer.csr.privateKey:privateKey);
+      
         signerPrivateKey =  await crypto.subtle.importKey(
               "pkcs8", // Key format
               signerPrivateKey,
@@ -3694,7 +3702,7 @@
         const certificate = new pkijs.Certificate();
         //Import the CSR using PKIjs
         const csr = pkijs.CertificationRequest.fromBER(binaryCsr);  
-        const crypto = pkijs.getCrypto(true);
+        
 
        //#region Parse and display information about "subject"
         const typemap = {
@@ -3856,7 +3864,7 @@
                 type: "2.5.4.3",
                 value: new asn1js.Utf8String({ value: issuerFingerPrint })
             })];
-            signerSignature = JSON.stringify(await signText(issuer,crypto.randomUUID(),false));
+            signerSignature = JSON.stringify(await signText(issuer,randomUUID(crypto),false));
         }
         else
         {
@@ -3905,7 +3913,7 @@
             let signedStringHash = await sha2Hex(signedString);
       
             let sigPayload = {
-               "id":crypto.randomUUID().replaceAll("-",""),
+               "id":randomUUID().replaceAll("-",""),
                "certisfy_object":true,
                "timestamp":now,
                "signerID":signer.finger_print,
@@ -4042,6 +4050,7 @@
       isTrustAnchor,
       updateCertTrustchainPrivacy,
       getVerificationResult,
+      randomUUID,
       PKI_CERT_VERSION,
       SET_SDK_MODE,
       demoTrustAnchorFingerprint
