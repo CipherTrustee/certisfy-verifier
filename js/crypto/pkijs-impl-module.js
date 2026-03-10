@@ -3667,7 +3667,7 @@
         const claimObject = typeof claim == "string"?JSON.parse(claim):claim;
         const plainFieldHashName = "pki-plain-fields:"+(await sha2Hex(claimObject.signature/*typeof claim == "string"?claim:JSON.stringify(claim)*/));
 
-		const plainFieldsJSON =  plainFields.find(f=>f[plainFieldHashName])?plainFields.find(f=>f[plainFieldHashName]):null;
+		const plainFieldsJSON =  plainFields.find(f=>f[plainFieldHashName])?plainFields.find(f=>f[plainFieldHashName])[plainFieldHashName]:null;
         if(plainFieldsJSON)
            claimObject["plainFields"] = JSON.parse(plainFieldsJSON);
       
@@ -4056,6 +4056,7 @@
       isTrustAnchor,
       updateCertTrustchainPrivacy,
       getVerificationResult,
+      getVerifiedCertificateField,
       randomUUID,
       PKI_CERT_VERSION,
       SET_SDK_MODE,
