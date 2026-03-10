@@ -11,6 +11,17 @@
     import * as hmacUtil from './hmac-util.js';
     import * as pvtsutils from './pvtsutils.js';
 
+    /************************************For nodejs environment**********************************************
+    import * as pkijs from 'pkijs';
+    import * as asn1js from 'asn1js';
+
+    import * as hmacUtil from './hmac-util.js';
+    import * as pvtsutils from './pvtsutils.js';
+
+	//import crypto from 'node:crypto';
+    //Get the crypto extension
+    const crypto = pkijs.getCrypto(true);
+    *******************************************************************************************************/
 
     /**
      *source:https://pkijs.org/examples/PKCS10ComplexExample/bundle.js
@@ -242,7 +253,7 @@
     }
 
     function base64DecodeToBin(b64){
-        const binaryString = window.atob(b64);
+        const binaryString = atob(b64);
         const length = binaryString.length;
         const bytes = new Uint8Array(length);
         for (let i = 0; i < length; i++) {
@@ -718,7 +729,7 @@
 	async function extractCertPublicKey(pem){
      	let publicKey  = Object.assign(signAlg=="ECDSA"?{"kty":"EC","ext":true}:{"kty":"RSA","ext":true,"alg":"RS256"},decodeCertificate(pem).subjectPublicKeyInfo.parsedKey.toJSON());
         
-        publicKey  = await window.crypto.subtle.importKey("jwk",publicKey,(signAlg=="ECDSA"?{
+        publicKey  = await crypto.subtle.importKey("jwk",publicKey,(signAlg=="ECDSA"?{
                   name:"ECDSA",
                   namedCurve: publicKey.crv,
                 }:{
@@ -2146,7 +2157,7 @@
         if(field.name == "pki-asym-encryption-key")
           	return plainField;        
       
-      	let hmacKey = field.hmacKey?field.hmacKey:window.crypto.randomUUID().replaceAll("-","");
+      	let hmacKey = field.hmacKey?field.hmacKey:crypto.randomUUID().replaceAll("-","");
       
         //hash structurally instead of blindly hashing
         const hashedPlainField = await hashPlainField(plainField,PUBLIC_PLAIN_FIELDS,null,false,hmacKey,!hashInput);
@@ -2313,7 +2324,7 @@
         
       	const stringToSignObject = JSON.parse(stringToSign);
 		if(stringToSignObject.maskedFields){
-            const hmk = window.crypto.randomUUID().replaceAll("-","");
+            const hmk = crypto.randomUUID().replaceAll("-","");
             let auxField = {
               "name":("pki-hmac-keys"),
               "value":JSON.stringify(stringToSignObject.maskedFields.map(f=>f.hmacKey).concat([hmk])),
@@ -2546,7 +2557,7 @@
             if(vouchClaim){
                 try
                 {
-                    let plainFieldHashName = "pki-plain-fields:"+(await sha2Hex(plainFieldVal));
+                    let plainFieldHashName = "pki-plain-fields:"+(await sha2Hex(/*plainFieldVal*/vouchClaim.signature));
 					vouchClaim = setPlainFields(vouchClaim);//ensure there is an appropriate plainFields object
                   
                     //restore any plain fields from containing claim object plainFields for contained claim
@@ -2569,7 +2580,7 @@
                                     let claim = JSON.parse(embeddedPlainFieldVal);
                                     claim = setPlainFields(claim);//ensure there is an appropriate plainFields object
 
-                                    let plainFieldHashName = "pki-plain-fields:"+(await sha2Hex(embeddedPlainFieldVal));
+                                    let plainFieldHashName = "pki-plain-fields:"+(await sha2Hex(/*embeddedPlainFieldVal*/claim.signature));
                                   
                                     //restore any plain fields from containing claim object plainFields for contained claim
                                     if(vouchClaim.plainFields.find(f=>f[plainFieldHashName]))
@@ -3269,14 +3280,14 @@
               
         if(keyPair){
             let kp = typeof keyPair == "string"?JSON.parse(keyPair):keyPair;
-			privateKey = await window.crypto.subtle.importKey(
+			privateKey = await crypto.subtle.importKey(
                 "pkcs8", 
                 base64ToArrayBuffer(kp.privateKey),
                 certAlgo, 
                 true, 
                 ["sign"]);
           
-          	 publicKey = await window.crypto.subtle.importKey(
+          	 publicKey = await crypto.subtle.importKey(
                     "spki", 
                     base64ToArrayBuffer(kp.publicKey),
                     certAlgo,true,["verify"]);
@@ -3340,7 +3351,7 @@
         }
       	else
         {      
-            let asymKeyPair = await window.crypto.subtle.generateKey(
+            let asymKeyPair = await crypto.subtle.generateKey(
                   {
                   name: "RSA-OAEP",
                   // Consider using a 4096-bit key for systems that require long-term security
@@ -3359,7 +3370,7 @@
             asymEncryptionKeyPEM=toPEM(asymEncryptionKeyPEM,"PUBLIC KEY");
         }
         /*
-        const keyDetails = await window.crypto.subtle.generateKey({
+        const keyDetails = await crypto.subtle.generateKey({
             name: 'RSASSA-PKCS1-v1_5',
             modulusLength: 2048, 
             publicExponent: new Uint8Array([1, 0, 1]),
@@ -3367,16 +3378,16 @@
         }, true, ["sign","verify"]);
 
       	
-        let decryptionKeyPEM = await window.crypto.subtle.exportKey("jwk",keyDetails.privateKey);
-        let encryptionKeyPEM  = await window.crypto.subtle.exportKey("jwk",keyDetails.publicKey);      
+        let decryptionKeyPEM = await crypto.subtle.exportKey("jwk",keyDetails.privateKey);
+        let encryptionKeyPEM  = await crypto.subtle.exportKey("jwk",keyDetails.publicKey);      
       
         //Adapt parameters and import
         encryptionKeyPEM.key_ops = ['encrypt'];
         decryptionKeyPEM.key_ops = ['decrypt'];
         encryptionKeyPEM.alg = 'RSA-OAEP-256';
         decryptionKeyPEM.alg = 'RSA-OAEP-256';
-        encryptionKeyPEM = await window.crypto.subtle.importKey("jwk", encryptionKeyPEM, {name: "RSA-OAEP", hash: {name: "SHA-256"}}, true, ["encrypt"]);    
-        decryptionKeyPEM = await window.crypto.subtle.importKey("jwk", decryptionKeyPEM,{name: "RSA-OAEP", hash: {name: "SHA-256"}}, true, ["decrypt"]);
+        encryptionKeyPEM = await crypto.subtle.importKey("jwk", encryptionKeyPEM, {name: "RSA-OAEP", hash: {name: "SHA-256"}}, true, ["encrypt"]);    
+        decryptionKeyPEM = await crypto.subtle.importKey("jwk", decryptionKeyPEM,{name: "RSA-OAEP", hash: {name: "SHA-256"}}, true, ["decrypt"]);
       
         decryptionKeyPEM = await crypto.subtle.exportKey("pkcs8",decryptionKeyPEM);
         encryptionKeyPEM  = await crypto.subtle.exportKey("spki",encryptionKeyPEM);
@@ -3401,7 +3412,7 @@
         }
         else      
         if(identityCertSig){
-            let pkiIdentity = identityCertSig["pki-identity"]?identityCertSig["pki-identity"]:await wrapCertIdentity(JSON.stringify(identityCertSig),"certisfy.com",JSON.stringify(identityCertSig));//idCert?await extractIdentityAnchorElement(idCert,window.crypto.randomUUID().replaceAll("-","")):null;
+            let pkiIdentity = identityCertSig["pki-identity"]?identityCertSig["pki-identity"]:await wrapCertIdentity(JSON.stringify(identityCertSig),"certisfy.com",JSON.stringify(identityCertSig));//idCert?await extractIdentityAnchorElement(idCert,crypto.randomUUID().replaceAll("-","")):null;
             let certIdInfo = pkiIdentity["pki-owner-id-info"];
             ownerIdCloak = certIdInfo?certIdInfo.ownerIdCloak:null;
         }
@@ -3421,7 +3432,7 @@
           
             let idCertSig = await signClaim(idCert,JSON.stringify(idFields),null,null,"certisfy.com",includeIdCertSigTrustChain);
 
-            let pkiIdentity = await wrapCertIdentity(JSON.stringify(idCertSig),"certisfy.com",JSON.stringify(idCertSig));//idCert?await extractIdentityAnchorElement(idCert,window.crypto.randomUUID().replaceAll("-","")):null;
+            let pkiIdentity = await wrapCertIdentity(JSON.stringify(idCertSig),"certisfy.com",JSON.stringify(idCertSig));//idCert?await extractIdentityAnchorElement(idCert,crypto.randomUUID().replaceAll("-","")):null;
             let certIdInfo = pkiIdentity["pki-owner-id-info"];
             ownerIdCloak = certIdInfo?certIdInfo.ownerIdCloak:null;
         }
@@ -3468,7 +3479,7 @@
                 let fieldNameHash = await sha2Hex(fieldName);
                 let fieldHash = (field?await sha2Hex(field):field);
                
-                let hmacKey = window.crypto.randomUUID().replaceAll("-","");
+                let hmacKey = crypto.randomUUID().replaceAll("-","");
 
                 let fieldContainer = {};
                 let maskedField = {};
@@ -3503,14 +3514,14 @@
         const csrResp = await createPKCS10Internal(hashAlg, signAlg,cn[0],keyPair);
         let csrText = csrResp.csrPEM;
 
-        let iv = window.crypto.getRandomValues(new Uint8Array(12));  
+        let iv = crypto.getRandomValues(new Uint8Array(12));  
         // crypto functions are wrapped in promises so we have to use await and make sure the function that
         // contains this code is an async function
         // encrypt function wants a cryptokey object
         let encryptionKey = null;
         if(payloadEncryptionKey){
             if(typeof payloadEncryptionKey == "string"){
-                encryptionKey = await window.crypto.subtle.importKey(
+                encryptionKey = await crypto.subtle.importKey(
                     "raw",
                     base64ToArrayBuffer(payloadEncryptionKey),
                     { 
@@ -3528,7 +3539,7 @@
         }
         else
         {
-            encryptionKey = await window.crypto.subtle.generateKey(
+            encryptionKey = await crypto.subtle.generateKey(
               {
                 name: "AES-GCM",
                 length: 128
@@ -3545,7 +3556,7 @@
            		Object.assign(csrDetails,{"identityCertSig":identityCertSig});
       
         csrText = new TextEncoder().encode(JSON.stringify(csrDetails));
-        let encryptedPayload = await window.crypto.subtle.encrypt(
+        let encryptedPayload = await crypto.subtle.encrypt(
                                 {
                                   name: "AES-GCM",
                                   iv: iv,
@@ -3557,7 +3568,7 @@
           //cipherTextPlusIV.set(encryptedPayload, iv.length);
           encryptedPayload = new Uint8Array([ ...iv, ...new Uint8Array(encryptedPayload)]);
 
-          encryptionKey = await window.crypto.subtle.exportKey("raw", encryptionKey);
+          encryptionKey = await crypto.subtle.exportKey("raw", encryptionKey);
 
           //atob(btoa(String.fromCharCode.apply(null, new Uint8Array(encryptedPayload))));
           //atob(btoa(String.fromCharCode.apply(null, new Uint8Array(encryptionKey))));
@@ -3582,7 +3593,7 @@
         let decryptionKey = new Uint8Array(Array.from(atob(encryptionKey), c => c.charCodeAt(0)));///*Uint8Array.from*/(atob(encryptionKey));
 
         // Import the binary key
-        decryptionKey =  await window.crypto.subtle.importKey(
+        decryptionKey =  await crypto.subtle.importKey(
           "raw", // Key format
           decryptionKey,
           { 
@@ -3596,7 +3607,7 @@
 
          let ctBuffer = Array.from(atob(csrCipherText), c => c.charCodeAt(0));
          let csr = new Uint8Array(ctBuffer);///*new Uint8Array*/(atob(csrText));
-         let decryptedPayload = await window.crypto.subtle.decrypt(
+         let decryptedPayload = await crypto.subtle.decrypt(
                                 {
                                   name: "AES-GCM",
                                   iv:new Uint8Array(ctBuffer.slice(0, 12)),
@@ -3639,6 +3650,17 @@
           	return Object.assign({},{"plainFields":plainFields}); 
     }
 
+    async function extractAndAttachPlainFields(claim,plainFields){
+        const claimObject = typeof claim == "string"?JSON.parse(claim):claim;
+        const plainFieldHashName = "pki-plain-fields:"+(await sha2Hex(claimObject.signature/*typeof claim == "string"?claim:JSON.stringify(claim)*/));
+
+		const plainFieldsJSON =  plainFields.find(f=>f[plainFieldHashName])?plainFields.find(f=>f[plainFieldHashName]):null;
+        if(plainFieldsJSON)
+           claimObject["plainFields"] = JSON.parse(plainFieldsJSON);
+      
+        return claimObject;
+    }
+
 	async function attachPlainFields(signature,plainFields,signerCert){
     	const cert  = signerCert?signerCert:await getCert(signature.signerID);      
         //used to verify signed masked fields in claim, it will take precedence 
@@ -3658,7 +3680,7 @@
     async function createCert(csrPEM,startDateText,expireDateText,privateKey,delegateSigningAuthority,lateralLimit,issuer,certisfy_stripe_token,approvedCSRFields,encryptIssuerFingerPrint){
       
         let signerPrivateKey =  fromPEM(issuer?issuer.csr.privateKey:privateKey);
-        signerPrivateKey =  await window.crypto.subtle.importKey(
+        signerPrivateKey =  await crypto.subtle.importKey(
               "pkcs8", // Key format
               signerPrivateKey,
               certAlgo, // Algorithm details (modify for your encryption algorithm)
@@ -3834,7 +3856,7 @@
                 type: "2.5.4.3",
                 value: new asn1js.Utf8String({ value: issuerFingerPrint })
             })];
-            signerSignature = JSON.stringify(await signText(issuer,window.crypto.randomUUID(),false));
+            signerSignature = JSON.stringify(await signText(issuer,crypto.randomUUID(),false));
         }
         else
         {
@@ -3870,7 +3892,7 @@
       }
 
     async function signText(signer,stringToSign,includeTrustChain){
-            let signerPrivateKey =  await window.crypto.subtle.importKey(
+            let signerPrivateKey =  await crypto.subtle.importKey(
                   "pkcs8", // Key format
                   fromPEM(signer.csr.privateKey),
                   certAlgo, // Algorithm details (modify for your encryption algorithm)
@@ -3883,7 +3905,7 @@
             let signedStringHash = await sha2Hex(signedString);
       
             let sigPayload = {
-               "id":window.crypto.randomUUID().replaceAll("-",""),
+               "id":crypto.randomUUID().replaceAll("-",""),
                "certisfy_object":true,
                "timestamp":now,
                "signerID":signer.finger_print,
@@ -3904,7 +3926,7 @@
                 }*/
             }
       
-            let signature = await window.crypto.subtle.sign(certAlgo,
+            let signature = await crypto.subtle.sign(certAlgo,
               signerPrivateKey,
               new TextEncoder().encode(signedStringHash)
             );
@@ -3920,7 +3942,7 @@
             //const publicKeyExtract = pkijs.PublicKeyInfo.fromBER(decodeCertificate(signerCert).subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHexView);
       		//console.log(parsedKey);
       		//console.log(toPEM(parsedKey.toSchema().toBER(false),"PUBLIC KEY"))
-            let signerPublicKey =  await window.crypto.subtle.importKey(
+            let signerPublicKey =  await crypto.subtle.importKey(
                   //"spki", // Key format
                   //decodeCertificate(signerCert).subjectPublicKeyInfo,
                   //"pkcs8",
@@ -3943,7 +3965,7 @@
 
         let signedStringHash = await sha2Hex(signedString);
       
-        let result = await window.crypto.subtle.verify(
+        let result = await crypto.subtle.verify(
             (parsedKey.namedCurve?{
                     name:signAlg,
                     hash:hashAlg,
@@ -3978,6 +4000,7 @@
       getHashedPlainField,
       getUnHashedPlainField,
       attachPlainFields,
+      extractAndAttachPlainFields,
       maskEmbeddedClaimsPlainFields,
       toPEM,
       fromPEM,
@@ -4020,5 +4043,6 @@
       updateCertTrustchainPrivacy,
       getVerificationResult,
       PKI_CERT_VERSION,
-      SET_SDK_MODE
+      SET_SDK_MODE,
+      demoTrustAnchorFingerprint
     };
