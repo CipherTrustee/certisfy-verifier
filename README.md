@@ -6,7 +6,7 @@ It can be used to meet a vast class of trust related needs for online use...even
 This verifier is for use by developers to verify Certisfy claims within apps & services that use Certisfy for information verification. 
 The verifier has no other dependencies except crypto functionality via pkijs ([https://pkijs.org/](https://pkijs.org/)) and associated utilities, the required dependencies are already included.
 
-The code required for verification is in the [/js/crypto](https://github.com/CipherTrustee/certisfy-verifier/tree/e3748b4973ec4e0438ff11cb95caf2e1f03f9d92/js) folder, the required module import and setup is below:
+The code required for verification is in the [/js/certisfy](https://github.com/CipherTrustee/certisfy-verifier/tree/dbfbdc9e66d0fb2e72b4e4b3da916c59c814f4ba/js/certisfy) folder, the required module import and setup is below:
 
 ```javascript
    import * as certisfy from "./js/certisfy/certisfy.js" 
@@ -131,7 +131,7 @@ The verifier exposes the following API functions to faciliate claim verification
     
     Review the implementatation code to see what the exact conditions are for trustworthiness determination.
     
-	https://github.com/CipherTrustee/certisfy-verifier/blob/9accd2917cae7bfd1503dde2d74cbed7738245c8/js/crypto/pkijs-impl-module.js#L2840
+	https://github.com/CipherTrustee/certisfy-verifier/blob/dbfbdc9e66d0fb2e72b4e4b3da916c59c814f4ba/js/certisfy/certisfy.js#L2858
 
     **Arguments**
 
