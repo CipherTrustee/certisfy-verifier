@@ -2856,7 +2856,9 @@
     }
 
     function isClaimTrustworthy(docVerificationContext){
-
+		if(!docVerificationContext || !docVerificationContext.certChainVerification)
+          return false;
+      
         if(docVerificationContext.isEmbedSticker)
             return (docVerificationContext.certChainVerification.certificateVerified && 
                     (!docVerificationContext.sigStatusVerification || docVerificationContext.sigStatusVerification == "good") &&
