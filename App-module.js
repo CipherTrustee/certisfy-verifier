@@ -4,7 +4,7 @@ let appModule = {
     // Actual implementation will depend on the detailed requirements and data models.
     console.log("Claim verification initiated.");
     if(claim && claim.length>0){
-    	const resp = await window.certisfyCrypto.verifyClaim(claim,receiverId,useChain);
+    	const resp = await window.certisfy.verifyClaim(claim,receiverId,useChain);
     	return resp;
     }
     // Here you can add any functional logic required for claim verification.
