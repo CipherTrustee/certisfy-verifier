@@ -85,7 +85,7 @@ The verifier exposes the following API functions to faciliate claim verification
     - `verification`\
       This is the verification object returned from the call to `verifyClaim`. 
       This contains details from the verification process. 
-      You can look at the console app UI code [index.html](https://github.com/CipherTrustee/certisfy-verifier/blob/e3748b4973ec4e0438ff11cb95caf2e1f03f9d92/index.html) to see how it maps to verification UI result.
+      You can look at the console app UI code [index.html](https://github.com/CipherTrustee/certisfy-verifier/blob/41d105d44af4652f427ed5967b295340c891c3dd/index.html) to see how it maps to verification UI result.
 
     **Usage** 
     
