@@ -125,7 +125,7 @@
         })
     }
 
-    async function loadTrustRoots(){
+    async function loadTrustRoots(useRoots){
       
       	return new Promise((resolve,reject)=>{
           
@@ -134,12 +134,15 @@
               	trustChainRoot = trustRoots[0];
                 resolve(trustChainRoot,trustRoots);
             }
-          
+            
+            if(useRoots)
+            	setRoot(useRoots);
+            else
           	if(SDK_MODE){
             	setRoot(trustRoots);
             }
             else
-            {              	
+            {
                 /*
                 $.ajax({url:API_PROXY_TARGET,
                         data:{
