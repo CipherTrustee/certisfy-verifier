@@ -131,7 +131,7 @@ The verifier exposes the following API functions to faciliate claim verification
     
     Review the implementatation code to see what the exact conditions are for trustworthiness determination.
     
-	https://github.com/CipherTrustee/certisfy-verifier/blob/dbfbdc9e66d0fb2e72b4e4b3da916c59c814f4ba/js/certisfy/certisfy.js#L2858
+	https://github.com/CipherTrustee/certisfy-verifier/blob/877cfacff228724a117c87e6cd57ab886c32405d/js/certisfy/certisfy.js#L2861
 
     **Arguments**
 
