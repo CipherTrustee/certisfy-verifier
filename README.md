@@ -6,7 +6,7 @@ It can be used to meet a vast class of trust related needs for online use...even
 This verifier is for use by developers to verify Certisfy claims within apps & services that use Certisfy for information verification. 
 The verifier has no other dependencies except crypto functionality via pkijs ([https://pkijs.org/](https://pkijs.org/)) and associated utilities, the required dependencies are already included.
 
-The code required for verification is in the [/js/certisfy](https://github.com/CipherTrustee/certisfy-verifier/tree/dbfbdc9e66d0fb2e72b4e4b3da916c59c814f4ba/js/certisfy) folder, the required module import and setup is below:
+The code required for verification is in [certisfy-js](https://github.com/CipherTrustee/certisfy-js), the required module import and setup is below:
 
 ```javascript
    import * as certisfy from "./js/certisfy/certisfy.js" 
@@ -24,7 +24,7 @@ The way to use it is to generate claims from the Certisfy app, then use the veri
 
 *You must attach the trust chain when creating your claim in the Certisfy app in order to be able to verify via the verifier.*
 
-Developers can use the console app for basic testing of remote claim verification, it uses the `/js/certisfy` folder code.
+Developers can use the console app for basic testing of remote claim verification, it uses [certisfy-js](https://github.com/CipherTrustee/certisfy-js).
 
 Currently a verifier is available only for Javascript.
 
@@ -69,8 +69,73 @@ The verifier exposes the following API functions to faciliate claim verification
     
     This object is rather opaque, see `getVerificationResult` below for a way to get a simplier result object.
     
+2. `verifyDHExchangeClaim(userCode,alicePrivateKey,useDHExchange,receiverId,useAttachedTrustChain)`
+
+    This function performs verification of claims in similar manner to `verifyClaim`, in fact it uses `verifyClaim`.
+    In stead of receiving claim object directly, this function fetches an encrypted claim from the Certisfy API and decrypts
+    it before verifying it.
+
+    **Arguments**
+
+    - `userCode`\    
+      This is the short code that will be used to fetch the encrypted claim. 
+            
+    - `alicePrivateKey`\
+      This is the private key of Alice's part of a diffie-hellman key exchange.
+      
+    - `useDHExchange`\    
+      This is optional, if you already have a DH exchange object previously fetched via a call to `getDHExchange`, you can provide it.
+
+    - `receiverId`\
+      Same as for `verifyClaim`.
+
+    - `useAttachedTrustChain`\
+	  Same as for `verifyClaim`.
+      
+    **Usage** 
     
-2. `verifyVouches(claim,verification)`
+    ```javascript
+    const {verification,claim,error} = await certisfy.verifyDHExchangeClaim(userCode,dhExchange,alicePrivateKey,receiverId,claim.trustChain || true);
+    ```
+	
+    The `verification` same as for `verifyClaim`. The `claim` is the decrypted claim extracted via the DH exchange.
+    
+    DH claim exchange is intended to help mitigate the risk of a person getting a claim from someone else and
+    passing it off as their own, contrary to the claim creator's expectation. 
+    
+    DH Exchange ensures that at least if there is data in the claim that is intended only for the expected recipient of a claim then an intermediary
+    cannot get their hands on it. DH exchange doesn't however eliminate the problem of a transparent intermediary
+    who may be trying to fraudulently facilitate the transmission of a claim, but it is an important capability that can be useful
+    in other mitigation strategies.
+    
+    It should be considered best practice to accept claims only through DH exchange.
+    
+    **Note** that DH exchange is facilitated via the PKI API and the API requires a subscription.
+    See DH exchange API [documentation](https://cipheredtrust.com/doc/#trp-dhx-api).
+
+3. `initiateDHExchange(receiverId,useKeyPair)`
+
+    This fuction will initiate a DH exchange playing the role of *Alice*. 
+    
+    **Arguments**
+
+    - `receiverId`\    
+      The receiver id. 
+
+    - `useKeyPair`\    
+      This is an optional ECDSA P-256 key pair, if not specified a key pair will be generated. 
+      This object must take the form `{publicKeyBase64,privateKeyBase64}`.
+
+    **Usage** 
+    
+    ```javascript
+    const {status,message,dhExchange} = await certisfy.initiateDHExchange(receiverId);
+    const {create_date,user_code,private_key} = dhExchange;
+    ```    
+    `user_code` is lookup code to be used for executing/completing exchange. `private_key` is base64
+    encoded.
+    
+4. `verifyVouches(claim,verification)`
 
     This function is used to verify any vouching associated with a claim. 
     Vouching allows additional claims to be attached to a main claim as vouched-for claims. 
@@ -99,7 +164,7 @@ The verifier exposes the following API functions to faciliate claim verification
 
 	`verifyVouches` modifies the `verification` object to integrate vouch verification results.
     
-3. `getVerificationResult(verification)`
+5. `getVerificationResult(verification)`
 
     This function transforms the `verification` object into something easier to use. 
     The resulting object maps to the intuitive UI presentation. 
@@ -123,7 +188,7 @@ The verifier exposes the following API functions to faciliate claim verification
     
     [verificationResult.json](https://github.com/CipherTrustee/certisfy-verifier/blob/6c0708eb1fc03b16e4ab7d2c7dd366218e508cd7/verificationResult.json)
     
-4. `isClaimTrustworthy(verification)`
+6. `isClaimTrustworthy(verification)`
 
     This function determines whether a verification can be considered trustworthy. The determination involves
     confirming cryptographic signature integrity and certificate validity. The function makes the determination
@@ -144,4 +209,4 @@ The verifier exposes the following API functions to faciliate claim verification
     const isTrustworthy = certisfy.isClaimTrustworthy(verification);
     ```
 	
-    The result is true or false.    
+    The result is `true` or `false`.    
