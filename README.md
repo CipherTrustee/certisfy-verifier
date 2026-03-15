@@ -77,13 +77,13 @@ The verifier exposes the following API functions to faciliate claim verification
 
     **Arguments**
 
-    - `userCode`\    
+    - `userCode`\
       This is the short code that will be used to fetch the encrypted claim. 
             
     - `alicePrivateKey`\
       This is the private key of Alice's part of a diffie-hellman key exchange.
       
-    - `useDHExchange`\    
+    - `useDHExchange`\
       This is optional, if you already have a DH exchange object previously fetched via a call to `getDHExchange`, you can provide it.
 
     - `receiverId`\
@@ -119,10 +119,10 @@ The verifier exposes the following API functions to faciliate claim verification
     
     **Arguments**
 
-    - `receiverId`\    
+    - `receiverId`\
       The receiver id. 
 
-    - `useKeyPair`\    
+    - `useKeyPair`\
       This is an optional ECDSA P-256 key pair, if not specified a key pair will be generated. 
       This object must take the form `{publicKeyBase64,privateKeyBase64}`.
 
