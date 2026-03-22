@@ -22,11 +22,12 @@ let appModule = {
                 return {};
               }
 
-              const {verification,claim} =   await window.certisfy.verifyDHExchangeClaim(userCode,alicePrivateKey,null,receiverId,useChain);
+              const {verification,claim} =   await window.certisfySDK.verifier.verifyDHExchangeClaim(userCode,alicePrivateKey,null,receiverId,useChain);
+
               return {verification,claim};
         }
       
-    	const verification = await window.certisfy.verifyClaim(claimText,receiverId,useChain);      
+    	const verification = await window.certisfySDK.verifier.verifyClaim(claimText,receiverId,useChain);      
       	
     	return {verification,claim:(JSON.parse(claimText))};
     }
