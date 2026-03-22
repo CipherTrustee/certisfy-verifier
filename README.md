@@ -9,9 +9,8 @@ The verifier has no other dependencies except crypto functionality via pkijs ([h
 The code required for verification is in [certisfy-js](https://github.com/CipherTrustee/certisfy-js), the required module import and setup is below:
 
 ```javascript
-   import * as certisfy from "./js/certisfy/certisfy.js" 
-   certisfy.SET_SDK_MODE(true); 
-   certisfy.loadTrustRoots();
+   import {createSDK} from "./js/certisfy/src/loader.js" 
+   const certisfySDK = await createSDK();
 ```
 
 ### The verifier test console
@@ -60,7 +59,7 @@ The verifier exposes the following API functions to faciliate claim verification
     **Usage** 
     
     ```javascript
-    const verification = await certisfy.verifyClaim(claim,receiverId,claim.trustChain || true);
+    const verification = await certisfySDK.verifier.verifyClaim(claim,receiverId,claim.trustChain || true);
     ```
 	
     The `verification` object represents the result of the verification. Review the console to see what it looks
@@ -95,7 +94,7 @@ The verifier exposes the following API functions to faciliate claim verification
     **Usage** 
     
     ```javascript
-    const {verification,claim,error} = await certisfy.verifyDHExchangeClaim(userCode,dhExchange,alicePrivateKey,receiverId,claim.trustChain || true);
+    const {verification,claim,error} = await certisfySDK.verifier.verifyDHExchangeClaim(userCode,dhExchange,alicePrivateKey,receiverId,claim.trustChain || true);
     ```
 	
     The `verification` same as for `verifyClaim`. The `claim` is the decrypted claim extracted via the DH exchange.
@@ -129,7 +128,7 @@ The verifier exposes the following API functions to faciliate claim verification
     **Usage** 
     
     ```javascript
-    const {status,message,dhExchange} = await certisfy.initiateDHExchange(receiverId);
+    const {status,message,dhExchange} = await certisfySDK.verifier.initiateDHExchange(receiverId);
     const {create_date,user_code,private_key} = dhExchange;
     ```    
     `user_code` is lookup code to be used for executing/completing exchange. `private_key` is base64
@@ -158,8 +157,8 @@ The verifier exposes the following API functions to faciliate claim verification
     First ensure presenting claim is valid then you can care about any embedded vouched-for claims.
     
     ```javascript
-    if(certisfy.isClaimTrustworthy(verification)) 
-       await certisfy.verifyVouches(claim,verification);
+    if(certisfySDK.verifier.isClaimTrustworthy(verification)) 
+       await certisfySDK.verifier.verifyVouches(claim,verification);
     ```
 
 	`verifyVouches` modifies the `verification` object to integrate vouch verification results.
@@ -178,7 +177,7 @@ The verifier exposes the following API functions to faciliate claim verification
     **Usage** 
     
     ```javascript
-    const verificationResult = certisfy.getVerificationResult(verification);
+    const verificationResult = certisfySDK.verifier.getVerificationResult(verification);
     ```
 	
     The `verificationResult` object represents a simplier and more intuitive object that shows the result of verification.
@@ -206,7 +205,7 @@ The verifier exposes the following API functions to faciliate claim verification
     **Usage** 
     
     ```javascript
-    const isTrustworthy = certisfy.isClaimTrustworthy(verification);
+    const isTrustworthy = certisfySDK.verifier.isClaimTrustworthy(verification);
     ```
 	
     The result is `true` or `false`.    
