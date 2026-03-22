@@ -149,7 +149,7 @@ The verifier exposes the following API functions to faciliate claim verification
     - `verification`\
       This is the verification object returned from the call to `verifyClaim`. 
       This contains details from the verification process. 
-      You can look at the console app UI code [index.html](https://github.com/CipherTrustee/certisfy-verifier/blob/41d105d44af4652f427ed5967b295340c891c3dd/index.html) to see how it maps to verification UI result.
+      You can look at the console app UI code [index.html](https://github.com/CipherTrustee/certisfy-verifier/blob/a304d28bb8966741ee5d5d42a266796f7dbe835e/index.html) to see how it maps to verification UI result.
 
     **Usage** 
     
@@ -185,7 +185,7 @@ The verifier exposes the following API functions to faciliate claim verification
     
     Below is an example showing the structure of the resulting object.
     
-    [verificationResult.json](https://github.com/CipherTrustee/certisfy-verifier/blob/6c0708eb1fc03b16e4ab7d2c7dd366218e508cd7/verificationResult.json)
+    [verificationResult.json](https://github.com/CipherTrustee/certisfy-verifier/blob/a304d28bb8966741ee5d5d42a266796f7dbe835e/verificationResult.json)
     
 6. `isClaimTrustworthy(verification)`
 
@@ -195,7 +195,7 @@ The verifier exposes the following API functions to faciliate claim verification
     
     Review the implementatation code to see what the exact conditions are for trustworthiness determination.
     
-	https://github.com/CipherTrustee/certisfy-js/blob/dd3c35f45f18747d5c91d1bf671dc45a76620b9a/js/certisfy/certisfy.js#L2902
+	https://github.com/CipherTrustee/certisfy-js/blob/6d7c0808d595d9396e458003c1f164549e80d214/src/core-pki/verifier.js#L1377
 
     **Arguments**
 
