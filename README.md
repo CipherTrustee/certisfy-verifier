@@ -27,4 +27,4 @@ Developers can use the console app for basic testing of remote claim verificatio
 
 Currently a verifier is available only for Javascript.
 
-The verifier exposes this [API](https://github.com/CipherTrustee/certisfy-js/tree/master/docs/verifier) to faciliate claim verification.
+The verifier test console implements this [API](https://github.com/CipherTrustee/certisfy-js/tree/master/docs/verifier) to faciliate claim verification.
