@@ -1,16 +1,13 @@
 # Certisfy Claim Verification And Integration
 
-Certisfy ([https://certisfy.com](https://certisfy.com)) is a trust projection and information verification toolkit. 
-It can be used to meet a vast class of trust related needs for online use...even offline use.
+This verifier is a complement to the [signer](https://github.com/CipherTrustee/certisfy-signer).
 
-This verifier is for use by developers to verify Certisfy claims within apps & services that use Certisfy for information verification. 
-The verifier has no other dependencies except crypto functionality via pkijs ([https://pkijs.org/](https://pkijs.org/)) and associated utilities, the required dependencies are already included.
-
-The code required for verification is in [certisfy-js](https://github.com/CipherTrustee/certisfy-js), the required module import and setup is below:
+The code required for verifying is in [certisfy-js](https://github.com/CipherTrustee/certisfy-js), the required module import and setup is below:
 
 ```javascript
    import {createSDK} from "./js/certisfy/src/loader.js" 
    const certisfySDK = await createSDK();
+   const {verifier} = certisfySDK;
 ```
 
 ### The verifier test console
