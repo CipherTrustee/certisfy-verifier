@@ -1,6 +1,6 @@
 # Certisfy Claim Verification And Integration
 
-This verifier is a complement to the [signer](https://github.com/CipherTrustee/certisfy-signer).
+This verifier reference implementation is a complement to the [signer](https://github.com/CipherTrustee/certisfy-signer).
 
 The code required for verifying is in [certisfy-js](https://github.com/CipherTrustee/certisfy-js), the required module import and setup is below:
 
